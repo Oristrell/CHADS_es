@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CHA₂DS₂-VASc & HAS-BLED Calculator</title>
+
+<style>
+body {
+  background-color: #87CEEB;
+  font-family: Arial, sans-serif;
+  padding: 40px 0;
+}
+
+.container {
+  background-color: #fffde7;
+  width: 950px;
+  max-width: 95%;
+  padding: 25px;
+  border-radius: 12px;
+  margin: auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* TITLE */
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 2px solid #3366cc;
+  background-color: #e6f0ff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #3366cc;
+  margin: 0 auto 25px auto;
+  width: fit-content;
+}
+
+.logo {
+  max-width: 45px;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th {
+  border-bottom: 2px solid #3366cc;
+  padding: 6px;
+  font-size: 14px;
+  text-align: center;
+}
+
+td {
+  padding: 6px;
+  vertical-align: middle;
+}
+
+/* COLUMNS */
+.label {
+  font-weight: bold;
+  width: 35%;
+  padding-right: 10px;
+}
+
+.option-text {
+  width: 40%;
+  font-size: 13px;
+  text-align: left;
+}
+
+.option-text.small {
+  font-size: 13px;
+}
+
+.checkbox {
+  width: 8%;
+  text-align: center;
+}
+
+.center {
+  width: 8%;
+  text-align: center;
+}
+
+/* ALIGNMENT FIX */
+.group-label {
+  vertical-align: top;
+  padding-top: 12px;
+}
+
+.group-first td {
+  padding-top: 10px;
+}
+
+.group-top td {
+  border-top: 1px solid #ccc;
+}
+
+/* BUTTON */
+button {
+  margin-top: 20px;
+  margin-left: 15px;
+  width: 130px;
+  padding: 6px;
+  background: #3366cc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* RESULT LAYOUT */
+.result-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 25px;
+}
+
+.result-box {
+  width: 60%;
+  text-align: center;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 10px 0;
+  font-weight: bold;
+  font-size: 16px;
+  color: white;
+}
+
+/* COLORS */
+.low {
+  background-color: #2e7d32;
+}
+
+.medium {
+  background-color: #ef6c00;
+}
+
+.high {
+  background-color: #c62828;
+}
+
+/* REFERENCES */
+.references {
+  margin-top: 30px;
+  font-size: 11px;
+  line-height: 1.4;
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+}
+</style>
+
+<script>
+function strokeRiskPercent(score) {
+  const table = {
+    0: 0.2,
+    1: 0.6,
+    2: 2.2,
+    3: 3.2,
+    4: 4.8,
+    5: 7.2,
+    6: 9.7,
+    7: 11.2,
+    8: 10.8,
+    9: 12.2
+  };
+  return table[score] !== undefined ? table[score] : "≥12";
+}
+
+function getRiskClassStroke(score) {
+  if (score === 0) return "low";
+  if (score === 1) return "medium";
+  return "high";
+}
+
+function getRiskClassBleed(score) {
+  if (score === 0) return "low";
+  if (score === 1) return "medium";
+  return "high";
+}
+
+function interpretStrokeRisk(score) {
+  if (score === 0) return "Bajo riesgo";
+  if (score === 1) return "Riesgo bajo–moderado";
+  if (score === 2) return "Riesgo moderado";
+  return "Riesgo alto";
+}
+
+function interpretBleedingRisk(score) {
+  if (score === 0) return "Bajo riesgo";
+  if (score === 1) return "Riesgo moderado";
+  return "Alto riesgo";
+}
+
+function calculateScore() {
+  let chads = 0;
+  let has = 0;
+
+  document.querySelectorAll("input[type=checkbox]").forEach(el => {
+    if (el.checked) {
+      chads += parseInt(el.dataset.chads || 0);
+      has += parseInt(el.dataset.has || 0);
+    }
+  });
+
+  const strokePercent = strokeRiskPercent(chads);
+
+  const strokeClass = getRiskClassStroke(chads);
+  const bleedClass = getRiskClassBleed(has);
+
+  document.getElementById("result").innerHTML = `
+    <div class="result-wrapper">
+
+      <div class="result-box ${strokeClass}">
+        CHADS₂-VASc: ${chads} (${interpretStrokeRisk(chads)})<br>
+        Risck d'ictus als 12 mesos: ${strokePercent}%
+      </div>
+
+      <div class="result-box ${bleedClass}">
+        HAS-BLED: ${has} (${interpretBleedingRisk(has)})
+      </div>
+
+    </div>
+  `;
+}
+
+// AGE exclusivity
+document.addEventListener("DOMContentLoaded", function() {
+  const ageBoxes = document.querySelectorAll("input[name='age']");
+  ageBoxes.forEach(box => {
+    box.addEventListener("change", function() {
+      if (this.checked) {
+        ageBoxes.forEach(b => {
+          if (b !== this) b.checked = false;
+        });
+      }
+    });
+  });
+});
+</script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="title">
+  <a href="https://ormedica.wordpress.com">
+    <img src="LogOM5.png" class="logo">
+  </a>
+  CALCULADOR SIMULTÁNEO CHADS₂-VASc & HAS-BLED
+</div>
+
+<table>
+
+<tr>
+  <th class="label"></th>
+  <th class="option-text"></th>
+  <th class="checkbox"></th>
+  <th class="center">CHADS₂-VASc</th>
+  <th class="center">HAS-BLED</th>
+</tr>
+
+<tr class="group-top group-first">
+  <td class="label group-label" rowspan="3">Edad</td>
+  <td class="option-text small">&lt;65 años</td>
+  <td class="checkbox"><input type="checkbox" name="age"></td>
+  <td class="center">0</td>
+  <td class="center">0</td>
+</tr>
+
+<tr>
+  <td class="option-text small">65–74 años</td>
+  <td class="checkbox"><input type="checkbox" name="age" data-chads="1" data-has="1"></td>
+  <td class="center">1</td>
+  <td class="center">1</td>
+</tr>
+
+<tr>
+  <td class="option-text small">≥75 años</td>
+  <td class="checkbox"><input type="checkbox" name="age" data-chads="2" data-has="1"></td>
+  <td class="center">2</td>
+  <td class="center">1</td>
+</tr>
+
+<tr>
+  <td class="label">Sexo femenino</td>
+  <td></td>
+  <td class="checkbox"><input type="checkbox" data-chads="1"></td>
+  <td class="center">1</td>
+  <td class="center">0</td>
+</tr>
+
+
+<tr class="group-top">
+  <td class="label">ICC / Disfunción VI</td>
+  <td></td>
+  <td class="checkbox"><input type="checkbox" data-chads="1"></td>
+  <td class="center">1</td>
+  <td class="center">0</td>
+</tr>
+
+<tr class="group-top group-first">
+  <td class="label group-label" rowspan="2">Hipertensión arterial</td>
+  <td class="option-text small">&gt;140/90 mmHg o terapia antihipertensiva</td>
+  <td class="checkbox"><input type="checkbox" data-chads="1"></td>
+  <td class="center">1</td>
+  <td class="center">0</td>
+</tr>
+
+<tr>
+  <td class="option-text small">&gt;160 mmHg sistólica</td>
+  <td class="checkbox"><input type="checkbox" data-chads="1" data-has="1"></td>
+  <td class="center">1</td>
+  <td class="center">1</td>
+</tr>
+
+
+<tr class="group-top">
+  <td class="label">Diabetes mellitus</td>
+  <td></td>
+  <td class="checkbox"><input type="checkbox" data-chads="1"></td>
+  <td class="center">1</td>
+  <td class="center">0</td>
+</tr>
+
+<tr>
+  <td class="label">Ictus / AIT / Tromboembolismo</td>
+  <td></td>
+  <td class="checkbox"><input type="checkbox" data-chads="2" data-has="1"></td>
+  <td class="center">2</td>
+  <td class="center">1</td>
+</tr>
+
+<tr>
+  <td class="label">Enfermedad vascular</td>
+  <td class="option-text small">Infarto de miocardio, Arteriopatía periférica o Placa aórtica</td>
+  <td class="checkbox"><input type="checkbox" data-chads="1"></td>
+  <td class="center">1</td>
+  <td class="center">0</td>
+</tr>
+
+<tr class="group-top">
+  <td class="label">Enfermedad renal</td>
+  <td class="option-text small">Creatinina >2.26mg/dl, o en diálisis o paciente con transplante renal</td>
+  <td class="checkbox"><input type="checkbox" data-has="1"></td>
+  <td class="center">0</td>
+  <td class="center">1</td>
+</tr>
+
+<tr>
+  <td class="label">Enfermedad hepática</td>
+  <td class="option-text small">Hepatopatía crónica, o AST/ALT >2*normal, o FAlcalina >3*normal</td>
+  <td class="checkbox"><input type="checkbox" data-has="1"></td>
+  <td class="center">0</td>
+  <td class="center">1</td>
+</tr>
+
+<tr class="group-top">
+  <td class="label">Historia de sangrado</td>
+  <td></td>
+  <td class="checkbox"><input type="checkbox" data-has="1"></td>
+  <td class="center">0</td>
+  <td class="center">1</td>
+</tr>
+
+<tr>
+  <td class="label">INR lábil</td>
+  <td></td>
+  <td class="checkbox"><input type="checkbox" data-has="1"></td>
+  <td class="center">0</td>
+  <td class="center">1</td>
+</tr>
+
+<tr>
+  <td class="label">Uso de determinados fármacos</td>
+  <td class="option-text small">Uso de antiinflamatorios o fármacos antiplaquetarios</td>
+  <td class="checkbox"><input type="checkbox" data-has="1"></td>
+  <td class="center">0</td>
+  <td class="center">1</td>
+</tr>
+
+<tr>
+  <td class="label">Consumo de alcohol</td>
+  <td></td>
+  <td class="checkbox"><input type="checkbox" data-has="1"></td>
+  <td class="center">0</td>
+  <td class="center">1</td>
+</tr>
+
+</table>
+
+<button onclick="calculateScore()">Calcular</button>
+
+<div id="result"></div>
+
+<div class="references">
+<strong>References:</strong><br>
+• Lip GYH, Frison L, Halperin JL, Lane CD. J Am Coll Cardiol 2011;57:173-80<br>
+• Lip GYH, Nieuwlaat R, Pisters R, Lane DA, et al. Chest 2010;137:263-272<br>
+</div>
+
+</div>
+
+</body>
+</html>
